@@ -14,7 +14,7 @@ That's it!
 
 You can configure your bundler options in the `build` script in `package.json` or via the installer-generated `bun.config.js` for Bun, `rollup.config.js` for rollup.js or `webpack.config.json` for Webpack (esbuild does not have a default configuration format, and we don't intend to use esbuild as an API in order to hack around it).
 
-If you're already using [`webpacker`](https://github.com/rails/webpacker) and you're wondering if you should migrate to `jsbundling-rails`, have a look at [the high-level comparison](./docs/comparison_with_webpacker.md). If you're looking to migrate from webpacker, see the [migration guide](https://github.com/rails/jsbundling-rails/blob/main/docs/switch_from_webpacker.md).
+If you're already using [`webpacker`](https://github.com/rails/webpacker) and you're wondering if you should migrate to `opal_stimulus`, have a look at [the high-level comparison](./docs/comparison_with_webpacker.md). If you're looking to migrate from webpacker, see the [migration guide](https://github.com/rails/opal_stimulus/blob/main/docs/switch_from_webpacker.md).
 
 If you want to use webpack features like [code splitting](https://webpack.js.org/guides/code-splitting/) and [hot module reloading](https://webpack.js.org/concepts/hot-module-replacement/), consider using the official fork of `webpacker`, [`shakapacker`](https://github.com/shakacode/shakapacker).
 
@@ -27,11 +27,11 @@ your system.
 To get started run:
 
 ```
-./bin/bundle add jsbundling-rails
+./bin/bundle add opal_stimulus-rails
 ```
 
 ```
-./bin/rails javascript:install:[bun|esbuild|rollup|webpack]
+./bin/rails opal:install:stimulus
 ```
 
 Or, in Rails 7+, you can preconfigure your new application to use a specific bundler with `rails new myapp -j [bun|esbuild|rollup|webpack]`.

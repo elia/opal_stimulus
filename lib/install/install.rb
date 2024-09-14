@@ -1,3 +1,5 @@
+require 'json'
+
 say "Compile into app/assets/builds"
 empty_directory "app/assets/builds"
 keep_file "app/assets/builds"
@@ -11,26 +13,45 @@ if Rails.root.join(".gitignore").exist?
   append_to_file(".gitignore", %(\n/node_modules\n))
 end
 
+if Rails.root.join("config/importmap.rb").exist?
+  append_to_file("config/importmap.rb", %(\npin_all_from "app/opal", under: "opal"\n))
+end
+
 if (app_layout_path = Rails.root.join("app/views/layouts/application.html.erb")).exist?
   say "Add JavaScript include tag in application layout"
   insert_into_file app_layout_path.to_s,
-    %(\n    <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %>), before: /\s*<\/head>/
+    %(\n    <%= javascript_include_tag "opal", "data-turbo-track": "reload", type: "module" %>), before: /\s*<\/head>/
 else
   say "Default application.html.erb is missing!", :red
-  say %(        Add <%= javascript_include_tag "application", "data-turbo-track": "reload", type: "module" %> within the <head> tag in your custom layout.)
+  say %(        Add <%= javascript_include_tag "opal", "data-turbo-track": "reload", type: "module" %> within the <head> tag in your custom layout.)
 end
 
-unless (app_js_entrypoint_path = Rails.root.join("app/javascript/application.js")).exist?
-  say "Create default entrypoint in app/javascript/application.js"
-  empty_directory app_js_entrypoint_path.parent.to_s
-  copy_file "#{__dir__}/application.js", app_js_entrypoint_path
-end
+say "Create default entrypoint in app/javascript/application.js"
+append_to_file Rails.root.join("app/javascript/application.js"), <<~JS
+  import { Controller } from '@hotwired/stimulus'
+  window.Stimulus.Controller = Controller
+JS
 
-unless Rails.root.join("package.json").exist?
-  say "Add default package.json"
-  copy_file "#{__dir__}/package.json", "package.json"
-end
+append_to_file Rails.root.join("app/javascript/controllers/opal_controller.js"), <<~JS
+  import { Controller } from "@hotwired/stimulus"
+  class OpalStimulusController extends Controller {}
+  window.OpalStimulusController = OpalStimulusController
+JS
+
+copy_file "#{__dir__}/opal/main.rb", "app/opal/main.rb"
+copy_file "#{__dir__}/opal/stimulus_controller.rb", "app/opal/stimulus_controller.rb"
+empty_directory "app/opal/controllers"
 
 say "Add bin/dev to start foreman"
 copy_file "#{__dir__}/dev", "bin/dev"
 chmod "bin/dev", 0755, verbose: false
+
+if Rails.root.join("Procfile.dev").exist?
+  append_to_file "Procfile.dev", "js: bun run build --watch\n"
+else
+  say "Add default Procfile.dev"
+  copy_file "#{__dir__}/Procfile.dev", "Procfile.dev"
+
+  say "Ensure foreman is installed"
+  run "gem install foreman"
+end

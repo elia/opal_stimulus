@@ -1,2 +1,2 @@
 web: env RUBY_DEBUG_OPEN=true bin/rails server
-js: yarn build --watch
+js: bundle exec opal --output=app/assets/builds/opal.js --watch -c app/opal/main.rb -I app/opal --no-cache
